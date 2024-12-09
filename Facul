@@ -1,0 +1,72 @@
+import sqlite3
+
+# Criação e configuração do banco de dados
+def init_db():
+    conn = sqlite3.connect("imc.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            height REAL NOT NULL,
+            weight REAL NOT NULL,
+            imc REAL NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+# Função para calcular IMC
+def calculate_imc(weight, height):
+    return round(weight / (height ** 2), 2)
+
+# Cadastro de usuário
+def register_user():
+    name = input("Digite o nome do usuário: ")
+    height = float(input("Digite a altura (em metros): "))
+    weight = float(input("Digite o peso (em kg): "))
+    imc = calculate_imc(weight, height)
+    conn = sqlite3.connect("imc.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO users (name, height, weight, imc) VALUES (?, ?, ?, ?)", (name, height, weight, imc))
+    conn.commit()
+    conn.close()
+    print(f"{name} foi cadastrado com sucesso! IMC calculado: {imc}")
+
+# Exibir histórico de usuários
+def show_users():
+    conn = sqlite3.connect("imc.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()
+    conn.close()
+
+    if users:
+        print("\nHistórico de IMC:")
+        for user in users:
+            print(f"ID: {user[0]}, Nome: {user[1]}, Altura: {user[2]}m, Peso: {user[3]}kg, IMC: {user[4]}")
+    else:
+        print("Nenhum usuário encontrado.")
+
+# Menu da aplicação
+def main():
+    init_db()
+    while True:
+        print("\n--- Aplicação de IMC ---")
+        print("1. Cadastrar usuário e calcular IMC")
+        print("2. Exibir histórico de IMCs")
+        print("3. Sair")
+        choice = input("Escolha uma opção: ")
+
+        if choice == "1":
+            register_user()
+        elif choice == "2":
+            show_users()
+        elif choice == "3":
+            print("Encerrando o programa. Até logo!")
+            break
+        else:
+            print("Opção inválida. Tente novamente.")
+
+if __name__ == "__main__":
+    main()
